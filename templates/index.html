@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Course Builder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background elements */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(76, 175, 80, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(33, 150, 243, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+            padding-top: 30px;
+        }
+
+        header h1 {
+            font-size: 3.5em;
+            margin-bottom: 15px;
+            text-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #00d4ff 0%, #7f39fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        header p {
+            font-size: 1.3em;
+            opacity: 0.85;
+            color: #e0e0e0;
+            font-weight: 300;
+        }
+
+        .input-section {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            margin-bottom: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            transition: all 0.3s ease;
+        }
+
+        .input-section:hover {
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 8px 40px rgba(31, 38, 135, 0.5);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            font-size: 1em;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #00d4ff;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        button {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #00d4ff 0%, #7f39fb 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.5);
+        }
+
+        button:active {
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #quizForm button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 18px 40px;
+            font-size: 1.1em;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: white;
+            font-size: 1.2em;
+            margin: 40px 0;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top: 4px solid #00d4ff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .course-container {
+            display: none;
+        }
+
+        .course-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .course-header {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .course-header h2 {
+            background: linear-gradient(135deg, #00d4ff 0%, #7f39fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            font-size: 2.5em;
+        }
+
+        .course-header p {
+            color: #e0e0e0;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .course-meta {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #b0e0e6;
+            background: rgba(0, 212, 255, 0.1);
+            padding: 10px 15px;
+            border-radius: 8px;
+        }
+
+        .objectives {
+            background: rgba(127, 57, 251, 0.1);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 25px;
+            border-left: 4px solid #7f39fb;
+        }
+
+        .objectives h4 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .objectives ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .objectives li {
+            padding: 8px 0;
+            color: #d0d0d0;
+        }
+
+        .objectives li:before {
+            content: "✓ ";
+            color: #00d4ff;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .lessons {
+            display: grid;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .lesson-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            transition: all 0.3s ease;
+        }
+
+        .lesson-card:hover {
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 8px 40px rgba(0, 212, 255, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .lesson-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #00d4ff 0%, #7f39fb 100%);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 1.3em;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .lesson-card h3 {
+            color: #00d4ff;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .lesson-content {
+            color: #d0d0d0;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .key-points {
+            background: rgba(76, 175, 80, 0.1);
+            padding: 20px;
+            border-left: 4px solid #4caf50;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .key-points h4 {
+            color: #4caf50;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .key-points ul {
+            list-style: none;
+        }
+
+        .key-points li {
+            padding: 6px 0;
+            color: #d0d0d0;
+        }
+
+        .key-points li:before {
+            content: "→ ";
+            color: #4caf50;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .quiz-section {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            margin-top: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .quiz-section h3 {
+            background: linear-gradient(135deg, #00d4ff 0%, #7f39fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+
+        .question {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 212, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .question-text {
+            font-weight: 600;
+            margin-bottom: 18px;
+            color: #e0e0e0;
+            font-size: 1.05em;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            padding: 12px 15px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            color: #d0d0d0;
+        }
+
+        .option-label:hover {
+            background: rgba(0, 212, 255, 0.15);
+            border-color: rgba(0, 212, 255, 0.3);
+            color: #00d4ff;
+        }
+
+        .option-label input[type="radio"] {
+            cursor: pointer;
+            accent-color: #00d4ff;
+            width: 18px;
+            height: 18px;
+        }
+
+        .quiz-results {
+            display: none;
+            background: rgba(127, 57, 251, 0.08);
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 25px;
+            border: 1px solid rgba(127, 57, 251, 0.2);
+        }
+
+        .quiz-results.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .score-display {
+            text-align: center;
+            font-size: 2.5em;
+            margin: 25px 0;
+            font-weight: bold;
+        }
+
+        .score-display.passed {
+            color: #4caf50;
+            text-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .score-display.failed {
+            color: #ff6b6b;
+            text-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .result-details {
+            margin-top: 25px;
+        }
+
+        .result-item {
+            padding: 18px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border-left: 5px solid #ddd;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .result-item.correct {
+            background: rgba(76, 175, 80, 0.1);
+            border-left-color: #4caf50;
+        }
+
+        .result-item.incorrect {
+            background: rgba(255, 107, 107, 0.1);
+            border-left-color: #ff6b6b;
+        }
+
+        .result-item .question-text {
+            font-size: 0.95em;
+            color: #e0e0e0;
+        }
+
+        .result-item div {
+            color: #d0d0d0;
+            margin: 6px 0;
+        }
+
+        .result-item .explanation {
+            margin-top: 12px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+            font-size: 0.9em;
+            color: #b0b0b0;
+            border-left: 3px solid #00d4ff;
+        }
+
+        .error {
+            background: rgba(255, 107, 107, 0.15);
+            color: #ff9999;
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: none;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .error.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .footer {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 60px;
+            padding: 40px 20px 30px;
+            color: #d0d0d0;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .footer-section h3 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+            font-size: 1em;
+            font-weight: 700;
+        }
+
+        .footer-contact {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .footer-contact a,
+        .footer-contact div {
+            color: #b0b0b0;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95em;
+        }
+
+        .footer-contact a:hover {
+            color: #00d4ff;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .social-links a {
+            width: 38px;
+            height: 38px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 50%;
+            color: #00d4ff;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .social-links a:hover {
+            background: rgba(0, 212, 255, 0.3);
+            border-color: #00d4ff;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .footer-bottom-links {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .footer-bottom-links a {
+            color: #b0b0b0;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .footer-bottom-links a:hover {
+            color: #00d4ff;
+        }
+
+        .copyright {
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2.2em;
+            }
+
+            header p {
+                font-size: 1.1em;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+
+            .course-meta {
+                flex-direction: column;
+            }
+
+            .input-section,
+            .course-header,
+            .quiz-section {
+                padding: 25px;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .footer-bottom-links {
+                justify-content: center;
+                width: 100%;
+            }
+
+            .social-links {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎓 AI Course Builder</h1>
+        </header>
+
+        <div class="input-section">
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="topicInput" 
+                    placeholder="Enter a topic (e.g., 'Machine Learning Basics', 'Digital Marketing', 'Web Development')"
+                >
+                <button onclick="generateCourse()" id="generateBtn">Generate Course</button>
+            </div>
+        </div>
+
+        <div class="error" id="errorMessage"></div>
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Generating your course...</p>
+        </div>
+
+        <div class="course-container" id="courseContainer">
+            <div class="course-header" id="courseHeader"></div>
+            <div class="lessons" id="lessonsContainer"></div>
+            <div class="quiz-section" id="quizSection"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <!-- Social Media Links -->
+            <div class="footer-section">
+                <h3>🔗 Follow Me</h3>
+                <div class="social-links">
+                    <a href="https://www.linkedin.com/in/marshal-john-618b07250/?originalSubdomain=in" target="_blank" title="LinkedIn">in</a>
+                    <a href="https://github.com/Marshal-Sahyadri-ECE" target="_blank" title="GitHub">G</a>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="footer-section">
+                <h3> Contact Me</h3>
+                <div class="footer-contact">
+                    <div>
+                        <span>📧</span>
+                        <a href="mailto:johnmarshal740@gmail.com">johnmarshal740@gmail.com</a>
+                    </div>
+                    <div>
+                        <span>📞</span>
+                        <a href="tel:+918792309920">+91 8792309920</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Bottom -->
+        <div class="footer-bottom">
+            <div class="copyright">
+                © 2025 Marshal John. All rights reserved.
+            </div>
+            <div class="footer-bottom-links">
+                <a href="https://www.marshaljohn.com">Privacy Policy</a>
+                <a href="https://www.marshaljohn.com">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+    <script>
+        const topicInput = document.getElementById('topicInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const loading = document.getElementById('loading');
+        const courseContainer = document.getElementById('courseContainer');
+        const errorMessage = document.getElementById('errorMessage');
+
+        async function generateCourse() {
+            const topic = topicInput.value.trim();
+
+            if (!topic) {
+                showError('Please enter a topic');
+                return;
+            }
+
+            generateBtn.disabled = true;
+            loading.classList.add('active');
+            errorMessage.classList.remove('active');
+
+            try {
+                const response = await fetch('/api/generate-course', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topic })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showError(data.error || 'Failed to generate course');
+                    return;
+                }
+
+                displayCourse(data.course);
+                courseContainer.classList.add('active');
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                generateBtn.disabled = false;
+                loading.classList.remove('active');
+            }
+        }
+
+        function displayCourse(course) {
+            displayCourseHeader(course);
+            displayLessons(course.lessons);
+            displayQuiz(course.quiz);
+        }
+
+        function displayCourseHeader(course) {
+            const header = document.getElementById('courseHeader');
+            header.innerHTML = `
+                <h2>${course.course_title}</h2>
+                <p>${course.course_description}</p>
+                <div class="course-meta">
+                    <div class="meta-item">
+                        <span>⏱️ Duration:</span>
+                        <span>${course.duration}</span>
+                    </div>
+                </div>
+                <div class="objectives">
+                    <h4>Learning Objectives</h4>
+                    <ul>
+                        ${course.learning_objectives.map(obj => `<li>${obj}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
+        function displayLessons(lessons) {
+            const container = document.getElementById('lessonsContainer');
+            container.innerHTML = lessons.map((lesson, idx) => `
+                <div class="lesson-card">
+                    <div class="lesson-number">${lesson.lesson_number || idx + 1}</div>
+                    <h3>${lesson.title}</h3>
+                    ${lesson.video_url ? `
+                        <div class="video-container">
+                            <iframe src="${lesson.video_url}" allowfullscreen></iframe>
+                        </div>
+                    ` : ''}
+                    <div class="lesson-content">${lesson.content}</div>
+                    ${lesson.key_points ? `
+                        <div class="key-points">
+                            <h4>Key Points</h4>
+                            <ul>
+                                ${lesson.key_points.map(point => `<li>${point}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function displayQuiz(quiz) {
+            const container = document.getElementById('quizSection');
+            container.innerHTML = `
+                <h3>${quiz.title}</h3>
+                <form id="quizForm">
+                    ${quiz.questions.map((q, idx) => `
+                        <div class="question">
+                            <div class="question-text">${idx + 1}. ${q.question}</div>
+                            <div class="options">
+                                ${q.options.map((opt, optIdx) => `
+                                    <label class="option-label">
+                                        <input type="radio" name="question${idx}" value="${optIdx}" required>
+                                        ${opt}
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                    <div style="margin-top: 30px; display: flex; gap: 10px;">
+                        <button type="button" onclick="submitQuiz('${JSON.stringify(quiz).replace(/'/g, '&apos;')}')">
+                            ✓ Submit Quiz
+                        </button>
+                    </div>
+                </form>
+                <div class="quiz-results" id="quizResults"></div>
+            `;
+        }
+
+        async function submitQuiz(quizJson) {
+            const form = document.getElementById('quizForm');
+            const formData = new FormData(form);
+            const answers = [];
+
+            for (let i = 0; i < JSON.parse(quizJson).questions.length; i++) {
+                const value = formData.get(`question${i}`);
+                answers.push(value !== null ? parseInt(value) : -1);
+            }
+
+            try {
+                const response = await fetch('/api/submit-quiz', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        answers,
+                        quiz: JSON.parse(quizJson)
+                    })
+                });
+
+                const result = await response.json();
+                displayQuizResults(result);
+            } catch (error) {
+                showError('Error submitting quiz: ' + error.message);
+            }
+        }
+
+        function displayQuizResults(result) {
+            const resultsDiv = document.getElementById('quizResults');
+            const scoreClass = result.passed ? 'passed' : 'failed';
+            const statusText = result.passed ? '✓ Passed!' : '✗ Failed';
+
+            resultsDiv.innerHTML = `
+                <div class="score-display ${scoreClass}">
+                    ${statusText}<br>
+                    <span style="font-size: 0.6em;">Score: ${result.score}/${result.total} (${result.percentage.toFixed(1)}%)</span>
+                </div>
+                <div class="result-details">
+                    ${result.results.map(r => `
+                        <div class="result-item ${r.is_correct ? 'correct' : 'incorrect'}">
+                            <div class="question-text">${r.question}</div>
+                            <div>Your answer: <strong>${r.user_answer}</strong></div>
+                            <div>Correct answer: <strong>${r.correct_answer}</strong></div>
+                            <div class="explanation">${r.explanation}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            resultsDiv.classList.add('active');
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('active');
+        }
+
+        topicInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') generateCourse();
+        });
+    </script>
+</body>
+</html>
