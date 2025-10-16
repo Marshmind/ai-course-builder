@@ -109,8 +109,8 @@ The API provides the following request and response examples:
 
 👤 Author
 ---------
-The AI Course Builder was created by [Your Name], a software developer and AI enthusiast with a passion for education and innovation.
+The AI Course Builder was created by Marshal John, a software developer and AI enthusiast with a passion for education and innovation.
 
 📝 License
 ----------
-The AI Course Builder is licensed under the [License Name], a permissive open-source license that allows for free use, modification, and distribution of the software.
+The AI Course Builder is licensed under the © 2025 Marshal John. All rights reserved. a permissive open-source license that allows for free use, modification, and distribution of the software.
